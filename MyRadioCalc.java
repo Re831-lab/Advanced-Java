@@ -1,8 +1,8 @@
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package com.mycompany.mainn;
+
+package com.mycompany.myradiocalc;
 
 /**
  *
@@ -13,70 +13,193 @@ import java.awt.*;
 import java.awt.event.*;
 
 public class MyRadioCalc extends JFrame {
-    private JTextField txtData;
+    private JPanel northPanel, southPanel;
+    private JLabel label, resultLabel;
+    private JTextField textField;
     private JRadioButton r1, r2;
-    private JButton btnAns;
-    private JPanel paneNorth, paneSouth;
-    private ButtonGroup group;
-
+    private ButtonGroup langGroup;
+    private JButton calcButton, generalCalcButton;
+    private JComboBox<String> comb;
+    private JCheckBox checkBox;
+    
     public MyRadioCalc() {
-        setTitle("Radio Button Example");
+       
+        super("حاسبة بسيطة");
         setSize(400, 200);
-        setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-        // Components
-        txtData = new JTextField(20);
-
+        setLayout(new BorderLayout());
+        
+        northPanel = new JPanel();
+        southPanel = new JPanel();
+        
+        label = new JLabel("Enter Data");
+        textField = new JTextField(15);
+        
         r1 = new JRadioButton("Ar");
-        r2 = new JRadioButton("En");
-
-        btnAns = new JButton("GetAns");
-
-        // Panels
-        paneNorth = new JPanel();
-        paneSouth = new JPanel();
-
-        // Add components to paneNorth
-        paneNorth.setLayout(new GridLayout(2, 1));
-        JPanel upper = new JPanel();
-        JPanel lower = new JPanel();
-
-        upper.add(new JLabel("Enter Data:"));
-        upper.add(txtData);
-
-        lower.add(r1);
-        lower.add(r2);
-
-        paneNorth.add(upper);
-        paneNorth.add(lower);
-
-        // Add button to paneSouth
-        paneSouth.add(btnAns);
-
-        // Group radio buttons
-        group = new ButtonGroup();
-        group.add(r1);
-        group.add(r2);
-
-        // Add panels to frame
-        add(paneNorth, BorderLayout.NORTH);
-        add(paneSouth, BorderLayout.SOUTH);
-
-        // ActionListener for the button
-        btnAns.addActionListener(new ActionListener() {
+        r2 = new JRadioButton("En", true); 
+        langGroup = new ButtonGroup();
+        langGroup.add(r1);
+        langGroup.add(r2);
+        
+        String[] operations = {"sqr", "sqrt", "!"};
+        comb = new JComboBox<>(operations);
+        
+        calcButton = new JButton("GetAns");
+        
+        generalCalcButton = new JButton("Calculate");
+        
+        checkBox = new JCheckBox("تفعيل", true);
+        
+        northPanel.add(label);
+        northPanel.add(textField);
+        northPanel.add(r1);
+        northPanel.add(r2);
+        northPanel.add(comb);
+        northPanel.add(calcButton);
+        northPanel.add(generalCalcButton);
+        northPanel.add(checkBox);
+        
+        resultLabel = new JLabel("الجواب سيظهر هنا");
+        southPanel.add(resultLabel);
+        
+        add(northPanel, BorderLayout.NORTH);
+        add(southPanel, BorderLayout.SOUTH);
+        
+        r1.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
-                String data = txtData.getText();
-                if (r1.isSelected()) {
-                    JOptionPane.showMessageDialog(null, "الجواب هو: " + data);
-                } else if (r2.isSelected()) {
-                    JOptionPane.showMessageDialog(null, "The Ans is: " + data);
-                } else {
-                    JOptionPane.showMessageDialog(null, "Please select a language.");
+                label.setText("أدخل البيانات");
+                calcButton.setText("احسب");
+                generalCalcButton.setText("حساب عام");
+            }
+        });
+        
+        r2.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                label.setText("Enter Data");
+                calcButton.setText("GetAns");
+                generalCalcButton.setText("Calculate");
+            }
+        });
+        
+        checkBox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                boolean isEnabled = checkBox.isSelected();
+                textField.setEnabled(isEnabled);
+                r1.setEnabled(isEnabled);
+                r2.setEnabled(isEnabled);
+                comb.setEnabled(isEnabled);
+                calcButton.setEnabled(isEnabled);
+                generalCalcButton.setEnabled(isEnabled);
+            }
+        });
+        
+        comb.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                calculateResult();
+            }
+        });
+        
+        calcButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                calculateResult();
+            }
+        });
+        
+        generalCalcButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                calculateGeneralResult();
+            }
+        });
+        
+        calcButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String text = textField.getText();
+                if (!text.isEmpty()) {
+                    comb.addItem(text);
                 }
             }
         });
+    }
     
+    private void calculateResult() {
+        try {
+            int num = Integer.parseInt(textField.getText());
+            String operation = (String) comb.getSelectedItem();
+            String result = "";
+            
+            if (operation.equals("sqr")) {
+                result = Integer.toBinaryString(num * num);
+            } else if (operation.equals("sqrt")) {
+                result = Integer.toBinaryString((int) Math.sqrt(num));
+            } else if (operation.equals("!")) {
+                result = Integer.toBinaryString(factorial(num));
+            } else {
+                result = Integer.toBinaryString(num); 
+            }
+            
+            if (r2.isSelected()) {
+                resultLabel.setText("The Ans is: " + result);
+            } else {
+                resultLabel.setText("الجواب هو: " + result);
+            }
+        } catch (NumberFormatException ex) {
+            resultLabel.setText("الرجاء إدخال رقم صحيح");
+        }
+    }
+    
+    private int factorial(int n) {
+        if (n <= 1) return 1;
+        return n * factorial(n - 1);
+    }
+    
+    private void calculateGeneralResult() {
+        try {
+            int num = Integer.parseInt(textField.getText());
+            String operation = (String) comb.getSelectedItem();
+            int result = 0;
+            
+            if (operation.equals("sqr")) {
+                result = num * num;
+            } else if (operation.equals("sqrt")) {
+                result = (int) Math.sqrt(num);
+            } else if (operation.equals("!")) {
+                result = factorial(num);
+            } else {
+                result = num;             }
+            
+            if (r2.isSelected()) {
+                resultLabel.setText("The General Result is: " + result);
+            } else {
+                resultLabel.setText("النتيجة العامة هي: " + result);
+            }
+        } catch (NumberFormatException ex) {
+            resultLabel.setText("الرجاء إدخال رقم صحيح");
+        }
+    }
+    
+    private void removeItem() {
+        String text = textField.getText();
+        for (int i = 0; i < comb.getItemCount(); i++) {
+            if (comb.getItemAt(i).equals(text)) {
+                comb.removeItemAt(i);
+                break;
+            }
+        }
+    }
+    
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                new MyRadioCalc().setVisible(true);
+            }
+        });
     }
 }
- 
